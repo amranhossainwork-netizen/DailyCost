@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#155e75">
+<title>মাসিক হিসাব</title>
+<style>
+:root{--bg:#f3f6f8;--card:#fff;--ink:#17212b;--muted:#64748b;--line:#e2e8f0;--teal:#0f766e;--blue:#155e75;--red:#b91c1c;--green:#15803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+header{background:linear-gradient(135deg,#155e75,#0f766e);color:white;padding:22px 16px 26px;border-radius:0 0 24px 24px}
+header h1{font-size:24px;margin:0 0 5px}header p{margin:0;color:#d9f3f2;font-size:13px}
+main{max-width:760px;margin:-12px auto 40px;padding:0 12px}
+.panel,.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 3px 12px #0f172a08}
+.monthrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.monthrow label{font-size:13px;color:var(--muted)}input,select,button{font:inherit}
+input,select{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:white;color:var(--ink);min-height:44px}
+.monthrow input{width:auto;flex:1;min-width:150px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.stat{margin:0;padding:14px}.stat small{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.stat strong{font-size:21px;word-break:break-word}.income{color:var(--green)}.expense{color:var(--red)}.balance{color:var(--blue)}
+h2{font-size:17px;margin:0 0 13px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px}.wide{grid-column:1/-1}
+button{border:0;border-radius:10px;min-height:44px;padding:11px 14px;background:var(--teal);color:white;font-weight:650;cursor:pointer}.secondary{background:#e2e8f0;color:#1e293b}.danger{background:#fee2e2;color:#991b1b}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1;background:#e2e8f0;color:#334155}.tabs button.active{background:var(--teal);color:white}
+.entry{border-top:1px solid var(--line);padding:12px 0;display:flex;align-items:flex-start;gap:10px}.entry:first-child{border-top:0}.entrymain{flex:1;min-width:0}.entrytitle{font-weight:650}.meta{font-size:12px;color:var(--muted);margin-top:3px}.amount{font-weight:750;white-space:nowrap}.empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:14px}
+.categoryrow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}.categoryrow:first-child{border-top:0}.bar{height:6px;background:#e2e8f0;border-radius:9px;margin-top:5px;overflow:hidden}.bar span{display:block;height:100%;background:#0f766e;border-radius:9px}
+.note{font-size:12px;line-height:1.5;color:var(--muted)}footer{text-align:center;color:var(--muted);font-size:12px;padding:5px 10px 25px}
+@media(max-width:420px){.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.stat strong{font-size:18px}.stats{gap:8px}}
+</style>
+</head>
+<body>
+<header><h1>📒 আমার মাসিক হিসাব</h1><p>আয়, খরচ ও মাস শেষে কত টাকা থাকে—এক জায়গায়</p></header>
+<main>
+  <section class="panel monthrow">
+    <label for="month">যে মাসের হিসাব দেখবে</label><input type="month" id="month">
+    <button class="secondary" id="exportBtn" type="button">হিসাব ডাউনলোড</button>
+  </section>
+  <section class="stats">
+    <div class="stat"><small>মোট আয়</small><strong class="income" id="totalIncome">৳0</strong></div>
+    <div class="stat"><small>মোট খরচ</small><strong class="expense" id="totalExpense">৳0</strong></div>
+    <div class="stat"><small>আয় থেকে খরচ বাদে</small><strong class="balance" id="balance">৳0</strong></div>
+    <div class="stat"><small>এই মাসে এন্ট্রি</small><strong id="entryCount">0</strong></div>
+  </section>
+  <section class="panel">
+    <h2 id="formHeading">নতুন আয় বা খরচ যোগ করো</h2>
+    <div class="tabs"><button type="button" class="active" id="incomeTab">আয় যোগ</button><button type="button" id="expenseTab">খরচ যোগ</button></div>
+    <form id="entryForm">
+      <div class="formgrid">
+        <div class="field"><label for="date">তারিখ</label><input id="date" type="date" required></div>
+        <div class="field"><label for="amount">টাকার পরিমাণ (৳)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="যেমন 15000" required></div>
+        <div class="field"><label for="category">ধরন</label><select id="category" required></select></div>
+        <div class="field"><label for="noteInput">বিবরণ (ঐচ্ছিক)</label><input id="noteInput" maxlength="100" placeholder="যেমন অক্টোবরের বেতন"></div>
+      </div>
+      <div class="buttons"><button type="submit" id="saveBtn">হিসাব যোগ করো</button><button type="button" class="secondary" id="cancelEdit" hidden>এডিট বাতিল</button></div>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>খরচের সারাংশ</h2><div id="categorySummary" class="empty">এই মাসে এখনো কোনো খরচ যোগ করা হয়নি।</div>
+  </section>
+  <section class="panel">
+    <h2>এই মাসের হিসাব</h2>
+    <div class="field" style="margin-bottom:10px"><label for="filter">হিসাব বাছাই</label><select id="filter"><option value="all">সব হিসাব</option><option value="income">শুধু আয়</option><option value="expense">শুধু খরচ</option></select></div>
+    <div id="entries"><div class="empty">এখনো কোনো হিসাব যোগ করা হয়নি।</div></div>
+  </section>
+  <section class="panel">
+    <h2>ব্যাকআপ</h2>
+    <p class="note">হিসাব এই ডিভাইসের ব্রাউজারে সেভ থাকবে। ব্রাউজারের ডেটা মুছে ফেললে হিসাব হারাতে পারে, তাই মাঝে মাঝে হিসাব ডাউনলোড করে রাখো। অন্য ফোনে নেওয়ার জন্যও ডাউনলোড করা ফাইল কাজে লাগবে।</p>
+    <div class="buttons"><button type="button" class="secondary" id="backupBtn">JSON ব্যাকআপ</button><button type="button" class="secondary" id="importBtn">ব্যাকআপ ফিরিয়ে আনো</button><input type="file" id="importFile" accept=".json,application/json" hidden></div>
+  </section>
+</main>
+<footer>তোমার ব্যক্তিগত হিসাব • টাকা বাংলাদেশি টাকা (৳)</footer>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const expenseCats=['House Rent','Pocket Cost','বাসার খরচ','Loan Payment','যাতায়াত','মোবাইল/ইন্টারনেট','চিকিৎসা','অন্যান্য'];
+const incomeCats=['বেতন','অতিরিক্ত আয়','অনলাইন আয়','অন্যান্য আয়'];
+let type='income', editId=null, entries=[];
+try{entries=JSON.parse(localStorage.getItem('monthlyHisabEntries')||'[]');if(!Array.isArray(entries))entries=[];}catch(e){entries=[];}
+const now=new Date(), localDate=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
+$('month').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+$('date').value=localDate(now);
+function save(){localStorage.setItem('monthlyHisabEntries',JSON.stringify(entries))}
+function money(n){return '৳'+Number(n||0).toLocaleString('en-BD',{maximumFractionDigits:2})}
+function categories(){const cats=type==='income'?incomeCats:expenseCats;$('category').innerHTML=cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function selected(){const m=$('month').value;return entries.filter(e=>e.date&&e.date.slice(0,7)===m)}
+function render(){
+ const list=selected(),inc=list.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),out=list.filter(e=>e.type==='expense').reduce((s,e)=>s+Number(e.amount),0);
+ $('totalIncome').textContent=money(inc);$('totalExpense').textContent=money(out);$('balance').textContent=money(inc-out);$('entryCount').textContent=list.length;
+ const sums={};list.filter(e=>e.type==='expense').forEach(e=>sums[e.category]=(sums[e.category]||0)+Number(e.amount));
+ const cats=Object.entries(sums).sort((a,b)=>b[1]-a[1]);
+ $('categorySummary').innerHTML=cats.length?cats.map(([c,v])=>`<div class="categoryrow"><div style="flex:1"><div>${esc(c)}</div><div class="bar"><span style="width:${out?Math.max(2,v/out*100):0}%"></span></div></div><strong>${money(v)}</strong></div>`).join(''):'<div class="empty">এই মাসে এখনো কোনো খরচ যোগ করা হয়নি।</div>';
+ const f=$('filter').value;const shown=list.filter(e=>f==='all'||e.type===f).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ $('entries').innerHTML=shown.length?shown.map(e=>`<div class="entry"><div class="entrymain"><div class="entrytitle">${esc(e.category)}${e.note?' · '+esc(e.note):''}</div><div class="meta">${esc(e.date)} · ${e.type==='income'?'আয়':'খরচ'}</div><div class="buttons"><button class="secondary" type="button" data-edit="${e.id}">এডিট</button><button class="danger" type="button" data-delete="${e.id}">মুছুন</button></div></div><div class="amount ${e.type==='income'?'income':'expense'}">${e.type==='income'?'+':'−'}${money(e.amount)}</div></div>`).join(''):'<div class="empty">এই মাসে কোনো হিসাব পাওয়া যায়নি।</div>';
+}
+function setType(t){type=t;$('incomeTab').classList.toggle('active',t==='income');$('expenseTab').classList.toggle('active',t==='expense');$('formHeading').textContent=t==='income'?'নতুন আয় যোগ করো':'নতুন খরচ যোগ করো';$('saveBtn').textContent=editId?'পরিবর্তন সেভ করো':(t==='income'?'আয় যোগ করো':'খরচ যোগ করো');categories()}
+$('incomeTab').onclick=()=>{setType('income')};$('expenseTab').onclick=()=>{setType('expense')};
+$('month').onchange=render;$('filter').onchange=render;
+$('entryForm').onsubmit=e=>{e.preventDefault();const item={id:editId||Date.now(),type,date:$('date').value,amount:Number($('amount').value),category:$('category').value,note:$('noteInput').value.trim()};if(!item.date||!Number.isFinite(item.amount)||item.amount<=0)return;if(editId){entries=entries.map(x=>x.id===editId?item:x)}else entries.push(item);save();$('month').value=item.date.slice(0,7);resetForm();render()};
+function resetForm(){$('entryForm').reset();$('date').value=localDate(new Date());editId=null;$('cancelEdit').hidden=true;setType('income')}
+$('cancelEdit').onclick=resetForm;
+$('entries').onclick=e=>{const del=e.target.closest('[data-delete]'),ed=e.target.closest('[data-edit]');if(del){const id=Number(del.dataset.delete);if(confirm('এই হিসাবটি মুছে ফেলবে?')){entries=entries.filter(x=>x.id!==id);save();render()}}if(ed){const id=Number(ed.dataset.edit),item=entries.find(x=>x.id===id);if(!item)return;editId=id;type=item.type;setType(type);if(![...$('category').options].some(o=>o.value===item.category))$('category').add(new Option(item.category,item.category));$('date').value=item.date;$('amount').value=item.amount;$('category').value=item.category;$('noteInput').value=item.note||'';$('saveBtn').textContent='পরিবর্তন সেভ করো';$('cancelEdit').hidden=false;$('formHeading').textContent='হিসাব এডিট করো';window.scrollTo({top:0,behavior:'smooth'})}};
+function download(name,content,mime){const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('exportBtn').onclick=()=>{const list=selected();const rows=[['Date','Type','Category','Amount_BDT','Note'],...list.map(e=>[e.date,e.type,e.category,e.amount,e.note||''])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('monthly-hisab-'+$('month').value+'.csv','\ufeff'+csv,'text/csv;charset=utf-8')};
+$('backupBtn').onclick=()=>download('monthly-hisab-backup.json',JSON.stringify(entries,null,2),'application/json');
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(!Array.isArray(data)||!data.every(x=>x.date&&['income','expense'].includes(x.type)&&Number(x.amount)>0&&x.category)){throw new Error('bad')};if(confirm('বর্তমান হিসাবের সঙ্গে ব্যাকআপের হিসাব যোগ করবে?')){const ids=new Set(entries.map(x=>x.id));data.forEach(x=>{if(!ids.has(x.id))entries.push(x)});save();render();alert('ব্যাকআপের হিসাব যোগ হয়েছে।')}}catch(err){alert('এই ব্যাকআপ ফাইলটি ঠিক নয়।')}e.target.value=''};
+categories();render();
+})();
+</script>
+</body>
+</html>
